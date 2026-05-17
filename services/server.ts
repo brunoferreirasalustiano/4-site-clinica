@@ -199,6 +199,10 @@ app.post('/chat', async (req: any, res: any) => {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
-app.listen(PORT, () => {
-    console.log(`EsteticaIA rodando em http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`EsteticaIA rodando em http://localhost:${PORT}`);
+    });
+}
+
+export default app;

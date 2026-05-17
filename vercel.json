@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/chat", "destination": "/api/chat" },
+    { "source": "/(.*)", "destination": "/projetos/$1" }
+  ]
+}

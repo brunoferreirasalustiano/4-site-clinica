@@ -285,9 +285,12 @@
             sendButton.disabled = true;
 
             const contextoLocal = obterContextoLocal();
+            const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://localhost:3000' 
+                : '';
 
             try {
-                const response = await fetch('http://localhost:3000/chat', {
+                const response = await fetch(`${baseUrl}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mensagem: textoUsuario, sessionId, contexto: contextoLocal })
