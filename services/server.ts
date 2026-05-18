@@ -83,18 +83,29 @@ function atualizarAnamnese(contexto: LunaContexto, mensagem: string) {
         { chave: 'periodo', pergunta: 'Qual periodo voce prefere para atendimento: manha ou tarde?', termos: ['manha', 'tarde', 'noite'] }
     ];
 
+    let matched = false;
+
     regras.forEach(regra => {
         if (regra.termos.some(termo => texto.includes(termo))) {
             contexto.respostasAnamnese[regra.chave] = negou ? `Negado: ${mensagem}` : mensagem;
             contexto.pendenciasAnamnese = contexto.pendenciasAnamnese.filter(item => item !== regra.pergunta);
+            matched = true;
         }
     });
 
-    if (['nao', 'não', 'nenhuma', 'nada'].some(termo => texto.includes(termo))) {
-        const primeira = contexto.pendenciasAnamnese[0];
-        if (primeira) {
-            contexto.respostasAnamnese[`resposta_${Object.keys(contexto.respostasAnamnese).length + 1}`] = mensagem;
-            contexto.pendenciasAnamnese = contexto.pendenciasAnamnese.slice(1);
+    if (!matched) {
+        const respondeuSim = ['sim', 'tenho', 'com certeza', 'tenho sim', 'correto', 'tudo certo', 'esta ok', 'está ok', 'pode'].some(termo => texto.includes(termo));
+        const respondeuNao = ['nao', 'não', 'nenhuma', 'nada', 'nunca'].some(termo => texto.includes(termo));
+
+        if (respondeuNao || respondeuSim) {
+            const primeira = contexto.pendenciasAnamnese[0];
+            if (primeira) {
+                const regraCorrespondente = regras.find(r => r.pergunta === primeira);
+                const chave = regraCorrespondente?.chave || `resposta_${Object.keys(contexto.respostasAnamnese).length + 1}`;
+                
+                contexto.respostasAnamnese[chave] = respondeuNao ? `Negado: ${mensagem}` : mensagem;
+                contexto.pendenciasAnamnese = contexto.pendenciasAnamnese.slice(1);
+            }
         }
     }
 }
@@ -117,14 +128,25 @@ function pareceRespostaDeAnamnese(contexto: LunaContexto, mensagem: string): boo
         'irritada',
         'manha',
         'tarde',
-        'noite'
+        'noite',
+        'correto',
+        'tudo certo',
+        'pode',
+        'está ok',
+        'esta ok',
+        'nenhuma',
+        'nada',
+        'nunca'
     ].some(termo => texto.includes(normalizar(termo)));
 }
 
 function definirEtapa(analise: AIIntentResult, contexto: LunaContexto): LunaEtapa {
     if (contexto.risco === 'alto') return 'bloqueado_risco';
     if (analise.intent === 'atendimento_humano' || analise.intent === 'reclamacao') return 'encaminhar_humano';
-    if (contexto.etapa === 'anamnese' && contexto.pendenciasAnamnese.length === 0) return 'agendamento';
+    if (contexto.etapa === 'anamnese') {
+        if (contexto.pendenciasAnamnese.length === 0) return 'agendamento';
+        return 'anamnese'; // Permanece na anamnese até responder todas as pendências
+    }
     if (analise.intent === 'agendar') return 'anamnese';
     if (analise.intent === 'saudacao') return 'inicio';
     return 'orientacao';
@@ -166,8 +188,16 @@ app.post(['/chat', '/api/chat'], async (req: any, res: any) => {
 
         let textoResposta = '';
         
-        // Se for sinal de alerta crítico, NÃO usa o LLM dinâmico para garantir 100% de precisão e segurança no redirecionamento.
-        if (analiseIA.intent === 'sinal_alerta' || contexto.risco === 'alto') {
+        // Se for sinal de alerta, anamnese, finalização ou risco, usamos as respostas estáticas controladas para 100% de precisão, segurança e conformidade clínica.
+        const usarRespostaControlada = 
+            analiseIA.intent === 'sinal_alerta' || 
+            contexto.risco === 'alto' || 
+            contexto.etapa === 'anamnese' || 
+            contexto.etapa === 'agendamento' || 
+            contexto.etapa === 'bloqueado_risco' || 
+            contexto.etapa === 'encaminhar_humano';
+
+        if (usarRespostaControlada) {
             textoResposta = respostaService.gerarResposta(analiseIA, analiseIA.servico, contexto);
         } else {
             try {
