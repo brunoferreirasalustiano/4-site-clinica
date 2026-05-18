@@ -251,6 +251,18 @@ function atualizarContexto(contexto: LunaContexto, analise: AIIntentResult) {
     const objetivo = detectarObjetivo(analise.mensagemOriginal);
     if (objetivo) contexto.objetivo = objetivo;
 
+    if (analise.intent === 'agendar' && contexto.etapa !== 'anamnese' && contexto.etapa !== 'cadastro') {
+        // RESETA COMPLETAMENTE O CONTEXTO PARA UM NOVO AGENDAMENTO LIMPO
+        contexto.clienteNome = '';
+        contexto.clienteTelefone = '';
+        contexto.pendenciasCadastro = ['Qual é o seu nome completo?', 'Qual é o seu telefone/WhatsApp com DDD?'];
+        contexto.respostasAnamnese = {};
+        contexto.pendenciasAnamnese = respostaService.perguntasAnamnesePadrao();
+        contexto.sinaisAlerta = [];
+        contexto.risco = 'baixo';
+        contexto.etapa = 'anamnese';
+    }
+
     if (contexto.etapa === 'anamnese') {
         atualizarAnamnese(contexto, analise.mensagemOriginal);
     } else if (contexto.etapa === 'cadastro') {
