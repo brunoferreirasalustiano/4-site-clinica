@@ -78,7 +78,6 @@ function detectarObjetivo(mensagem: string): string {
 
 function atualizarAnamnese(contexto: LunaContexto, mensagem: string) {
     const texto = normalizar(mensagem);
-    const negou = ['nao', 'não', 'nenhuma', 'nada', 'nunca'].some(termo => texto.includes(normalizar(termo)));
     const regras = [
         { chave: 'gestacao_amamentacao', pergunta: 'Voce esta gravida ou amamentando?', termos: ['gravida', 'amamentando', 'gestante'] },
         { chave: 'alergias_infeccoes', pergunta: 'Tem alergias importantes, herpes ativa ou alguma infeccao/ferida na pele agora?', termos: ['alergia', 'herpes', 'infeccao', 'ferida'] },
@@ -87,27 +86,45 @@ function atualizarAnamnese(contexto: LunaContexto, mensagem: string) {
         { chave: 'periodo', pergunta: 'Qual periodo voce prefere para atendimento: manha ou tarde?', termos: ['manha', 'tarde', 'noite'] }
     ];
 
-    let matched = false;
-
+    // 1. Tenta correspondência por palavras-chave específicas
+    let matchedChaves: string[] = [];
     regras.forEach(regra => {
         if (regra.termos.some(termo => texto.includes(termo))) {
+            const negou = ['nao', 'não', 'nenhuma', 'nada', 'nunca'].some(termo => texto.includes(termo));
             contexto.respostasAnamnese[regra.chave] = negou ? `Negado: ${mensagem}` : mensagem;
             contexto.pendenciasAnamnese = contexto.pendenciasAnamnese.filter(item => item !== regra.pergunta);
-            matched = true;
+            matchedChaves.push(regra.chave);
         }
     });
 
-    if (!matched) {
-        const respondeuSim = ['sim', 'tenho', 'com certeza', 'tenho sim', 'correto', 'tudo certo', 'esta ok', 'está ok', 'pode'].some(termo => texto.includes(termo));
-        const respondeuNao = ['nao', 'não', 'nenhuma', 'nada', 'nunca'].some(termo => texto.includes(termo));
+    // 2. Se não correspondeu a nada específico por termos, ou se respondeu em formato de lista (1 não 2 não 3 não)
+    const contemNegativa = ['nao', 'não', 'nenhuma', 'nada', 'nunca'].some(termo => texto.includes(termo));
+    const contemAfirmativa = ['sim', 'tenho', 'com certeza', 'tenho sim', 'correto', 'tudo certo', 'esta ok', 'está ok', 'pode'].some(termo => texto.includes(termo));
 
-        if (respondeuNao || respondeuSim) {
+    if (matchedChaves.length === 0 && (contemNegativa || contemAfirmativa)) {
+        const matchesNao = (mensagem.match(/n[aã]o/gi) || []).length;
+        const matchesSim = (mensagem.match(/\bsim\b/gi) || []).length;
+        const totalMatches = matchesNao + matchesSim;
+
+        if (totalMatches >= 2) {
+            // Remove as pendências em lote baseando-se nas perguntas ativas exibidas (máximo 3)
+            const pendenciasAtivas = contexto.pendenciasAnamnese.slice(0, Math.min(totalMatches, contexto.pendenciasAnamnese.length));
+            const ehMajoritarioNao = matchesNao >= matchesSim;
+
+            pendenciasAtivas.forEach(pergunta => {
+                const regraCorrespondente = regras.find(r => r.pergunta === pergunta);
+                const chave = regraCorrespondente?.chave || `resposta_${Object.keys(contexto.respostasAnamnese).length + 1}`;
+                contexto.respostasAnamnese[chave] = ehMajoritarioNao ? `Negado: ${mensagem}` : mensagem;
+                contexto.pendenciasAnamnese = contexto.pendenciasAnamnese.filter(item => item !== pergunta);
+            });
+        } else {
+            // Resposta a uma única pendência da fila (comportamento padrão anterior)
             const primeira = contexto.pendenciasAnamnese[0];
             if (primeira) {
                 const regraCorrespondente = regras.find(r => r.pergunta === primeira);
                 const chave = regraCorrespondente?.chave || `resposta_${Object.keys(contexto.respostasAnamnese).length + 1}`;
-                
-                contexto.respostasAnamnese[chave] = respondeuNao ? `Negado: ${mensagem}` : mensagem;
+                const negou = ['nao', 'não', 'nenhuma', 'nada', 'nunca'].some(termo => texto.includes(termo));
+                contexto.respostasAnamnese[chave] = negou ? `Negado: ${mensagem}` : mensagem;
                 contexto.pendenciasAnamnese = contexto.pendenciasAnamnese.slice(1);
             }
         }
@@ -241,13 +258,25 @@ function atualizarContexto(contexto: LunaContexto, analise: AIIntentResult) {
 
 app.post(['/chat', '/api/chat'], async (req: any, res: any) => {
     try {
-        const { mensagem, sessionId = 'default' } = req.body;
+        const { mensagem, sessionId = 'default', contexto: contextoRecebido } = req.body;
 
         if (!mensagem) {
             return res.status(400).json({ erro: 'Mensagem vazia' });
         }
 
-        const contexto = sessoes.get(sessionId) || criarContexto(sessionId);
+        let contexto: LunaContexto;
+        if (contextoRecebido && typeof contextoRecebido === 'object' && contextoRecebido.sessionId === sessionId) {
+            contexto = contextoRecebido;
+            // Garante que novos campos e propriedades estejam sempre inicializados
+            if (!contexto.clienteNome) contexto.clienteNome = '';
+            if (!contexto.clienteTelefone) contexto.clienteTelefone = '';
+            if (!contexto.pendenciasCadastro) {
+                contexto.pendenciasCadastro = ['Qual é o seu nome completo?', 'Qual é o seu telefone/WhatsApp com DDD?'];
+            }
+        } else {
+            contexto = sessoes.get(sessionId) || criarContexto(sessionId);
+        }
+
         console.log(`Cliente (${sessionId}) disse: "${mensagem}"`);
 
         const analiseIA = await aiService.analisarMensagemCliente(mensagem);
