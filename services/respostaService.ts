@@ -100,8 +100,14 @@ export function gerarResposta(
         return 'Pelo que voce descreveu, isso precisa de avaliacao profissional antes de qualquer procedimento estetico. Dor forte, roxo escuro progressivo, pus, febre, bolhas, falta de ar, ferida que nao cicatriza, pinta mudando ou reacao apos preenchimento nao devem ser resolvidos por chat. Vou priorizar atendimento humano; se houver falta de ar, necrose, dor intensa ou piora rapida, procure atendimento medico imediatamente.';
     }
 
+    if (contexto?.etapa === 'cadastro') {
+        const pendencias = contexto.pendenciasCadastro || [];
+        const proxima = pendencias[0] || 'Por favor, informe seu nome completo.';
+        return `Ótimo! Sua triagem clínica foi concluída com sucesso e você está apta(o) para o procedimento de ${alvo}.\n\nPara fazer o seu **agendamento real** e registrar sua ficha na clínica, preciso de duas informações rápidas:\n👉 **${proxima}**`;
+    }
+
     if (contexto?.etapa === 'agendamento') {
-        return `Triagem inicial concluida para ${alvo}. Como voce nao trouxe sinais de alerta nesta conversa, posso encaminhar seu atendimento para confirmar agenda, endereco e detalhes finais no WhatsApp. A avaliacao presencial ainda confirma se o procedimento e adequado no dia.`;
+        return `🎉 **AGENDAMENTO REGISTRADO COM SUCESSO!** 🎉\n\nExcelente, ${contexto.clienteNome || 'cliente'}! O seu agendamento para **${alvo}** foi confirmado e salvo em nosso sistema de agendamentos reais!\n\n📋 **Ficha do Agendamento:**\n👤 **Nome:** ${contexto.clienteNome}\n📱 **WhatsApp:** ${contexto.clienteTelefone}\n📅 **Período:** ${contexto.respostasAnamnese['periodo'] || 'A combinar'}\n💵 **Investimento:** ${formatarMoeda(valorTotal)} (parcelamento disponível em até 2x sem juros no Cartão)\n\nNossa equipe já recebeu sua ficha e entrará em contato em breve para definir o horário exato da sua consulta. Se quiser falar direto com nossa recepção agora, clique no botão verde abaixo!`;
     }
 
     if (intent === 'agendar') {

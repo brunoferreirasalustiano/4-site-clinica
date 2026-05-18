@@ -4,6 +4,7 @@ import * as aiService from './aiService.js';
 import * as respostaService from './respostaService.js';
 import type { AIIntentResult, LunaContexto, LunaEtapa, LunaRisco } from '../types/index';
 import { join } from 'node:path';
+import { writeFileSync, existsSync, readFileSync } from 'node:fs';
 
 const app = express();
 const sitePath = join(process.cwd(), 'projetos');
@@ -25,6 +26,9 @@ function criarContexto(sessionId: string): LunaContexto {
         sinaisAlerta: [],
         respostasAnamnese: {},
         pendenciasAnamnese: respostaService.perguntasAnamnesePadrao(),
+        clienteNome: '',
+        clienteTelefone: '',
+        pendenciasCadastro: ['Qual é o seu nome completo?', 'Qual é o seu telefone/WhatsApp com DDD?'],
         mensagens: []
     };
 }
@@ -110,6 +114,50 @@ function atualizarAnamnese(contexto: LunaContexto, mensagem: string) {
     }
 }
 
+function atualizarCadastro(contexto: LunaContexto, mensagem: string) {
+    if (!contexto.pendenciasCadastro || contexto.pendenciasCadastro.length === 0) return;
+
+    const texto = mensagem.trim();
+    if (!texto) return;
+
+    const primeira = contexto.pendenciasCadastro[0];
+    if (primeira === 'Qual é o seu nome completo?') {
+        contexto.clienteNome = texto;
+        contexto.pendenciasCadastro = contexto.pendenciasCadastro.slice(1);
+    } else if (primeira === 'Qual é o seu telefone/WhatsApp com DDD?') {
+        contexto.clienteTelefone = texto;
+        contexto.pendenciasCadastro = contexto.pendenciasCadastro.slice(1);
+    }
+}
+
+function salvarAgendamentoReal(contexto: LunaContexto) {
+    const agendamentosPath = join(process.cwd(), 'agendamentos.json');
+    let lista: any[] = [];
+
+    if (existsSync(agendamentosPath)) {
+        try {
+            lista = JSON.parse(readFileSync(agendamentosPath, 'utf8'));
+        } catch (e) {
+            lista = [];
+        }
+    }
+
+    const novo = {
+        id: 'agend_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        sessionId: contexto.sessionId,
+        clienteNome: contexto.clienteNome || 'Desconhecido',
+        clienteTelefone: contexto.clienteTelefone || 'Não informado',
+        servico: contexto.servicoAtual || 'Procedimentos Escolhidos',
+        dataHora: contexto.respostasAnamnese['periodo'] || 'A combinar',
+        respostasAnamnese: contexto.respostasAnamnese,
+        criadoEm: new Date().toISOString()
+    };
+
+    lista.push(novo);
+    writeFileSync(agendamentosPath, JSON.stringify(lista, null, 2), 'utf8');
+    console.log(`✅ Agendamento REAL salvo com sucesso em agendamentos.json:`, novo);
+}
+
 function pareceRespostaDeAnamnese(contexto: LunaContexto, mensagem: string): boolean {
     if (contexto.etapa !== 'anamnese') return false;
     const texto = normalizar(mensagem);
@@ -143,10 +191,17 @@ function pareceRespostaDeAnamnese(contexto: LunaContexto, mensagem: string): boo
 function definirEtapa(analise: AIIntentResult, contexto: LunaContexto): LunaEtapa {
     if (contexto.risco === 'alto') return 'bloqueado_risco';
     if (analise.intent === 'atendimento_humano' || analise.intent === 'reclamacao') return 'encaminhar_humano';
+    
     if (contexto.etapa === 'anamnese') {
-        if (contexto.pendenciasAnamnese.length === 0) return 'agendamento';
+        if (contexto.pendenciasAnamnese.length === 0) return 'cadastro';
         return 'anamnese'; // Permanece na anamnese até responder todas as pendências
     }
+    
+    if (contexto.etapa === 'cadastro') {
+        if (!contexto.pendenciasCadastro || contexto.pendenciasCadastro.length === 0) return 'agendamento';
+        return 'cadastro'; // Permanece no cadastro até preencher tudo
+    }
+    
     if (analise.intent === 'agendar') return 'anamnese';
     if (analise.intent === 'saudacao') return 'inicio';
     return 'orientacao';
@@ -167,9 +222,21 @@ function atualizarContexto(contexto: LunaContexto, analise: AIIntentResult) {
     const objetivo = detectarObjetivo(analise.mensagemOriginal);
     if (objetivo) contexto.objetivo = objetivo;
 
-    atualizarAnamnese(contexto, analise.mensagemOriginal);
+    if (contexto.etapa === 'anamnese') {
+        atualizarAnamnese(contexto, analise.mensagemOriginal);
+    } else if (contexto.etapa === 'cadastro') {
+        atualizarCadastro(contexto, analise.mensagemOriginal);
+    }
+    
     contexto.risco = detectarRisco(analise, analise.mensagemOriginal, contexto);
+    
+    const etapaAnterior = contexto.etapa;
     contexto.etapa = definirEtapa(analise, contexto);
+
+    // Se transicionou de cadastro para agendamento, salva o agendamento real!
+    if (etapaAnterior === 'cadastro' && contexto.etapa === 'agendamento') {
+        salvarAgendamentoReal(contexto);
+    }
 }
 
 app.post(['/chat', '/api/chat'], async (req: any, res: any) => {

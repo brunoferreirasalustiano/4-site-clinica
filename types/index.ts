@@ -33,6 +33,7 @@ export type LunaEtapa =
   | 'inicio'
   | 'orientacao'
   | 'anamnese'
+  | 'cadastro'
   | 'agendamento'
   | 'encaminhar_humano'
   | 'bloqueado_risco';
@@ -46,6 +47,9 @@ export interface LunaContexto {
   sinaisAlerta: string[];
   respostasAnamnese: Record<string, string>;
   pendenciasAnamnese: string[];
+  clienteNome?: string;
+  clienteTelefone?: string;
+  pendenciasCadastro?: string[];
   mensagens: Array<{
     origem: 'cliente' | 'luna';
     texto: string;
