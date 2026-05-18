@@ -3,13 +3,11 @@ import cors from 'cors';
 import * as aiService from './aiService';
 import * as respostaService from './respostaService';
 import type { AIIntentResult, LunaContexto, LunaEtapa, LunaRisco } from '../types/index';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 const app = express();
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const sitePath = join(__dirname, '..', 'projetos');
-const projectPath = join(__dirname, '..');
+const sitePath = join(process.cwd(), 'projetos');
+const projectPath = process.cwd();
 const sessoes = new Map<string, LunaContexto>();
 
 app.use(cors());
