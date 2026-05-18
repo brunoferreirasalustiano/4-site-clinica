@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import * as aiService from './aiService';
-import * as respostaService from './respostaService';
+import * as aiService from './aiService.js';
+import * as respostaService from './respostaService.js';
 import type { AIIntentResult, LunaContexto, LunaEtapa, LunaRisco } from '../types/index';
 import { join } from 'node:path';
 

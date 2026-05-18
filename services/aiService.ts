@@ -1,6 +1,6 @@
 import axios from 'axios';
-import * as Types from '../types/index';
-import { carregarEnv } from './env';
+import * as Types from '../types/index.js';
+import { carregarEnv } from './env.js';
 
 carregarEnv();
 

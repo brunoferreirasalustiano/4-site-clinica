@@ -1,5 +1,5 @@
-import { gerarResposta } from './respostaService';
-import type { LunaIntent } from '../types/index';
+import { gerarResposta } from './respostaService.js';
+import type { LunaIntent } from '../types/index.js';
 
 type CasoTreino = {
     nivel: 'facil' | 'medio' | 'dificil' | 'clinico';
