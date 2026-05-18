@@ -1,7 +1,6 @@
 {
   "name": "4-site-clinica",
   "version": "1.0.0",
-  "type": "module",
   "description": "Sistema de Agendamento com IA para Clínica de Estética",
   "main": "main.ts",
   "scripts": {

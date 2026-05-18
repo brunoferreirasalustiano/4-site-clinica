@@ -152,7 +152,7 @@ function atualizarContexto(contexto: LunaContexto, analise: AIIntentResult) {
     contexto.etapa = definirEtapa(analise, contexto);
 }
 
-app.post('/chat', async (req: any, res: any) => {
+app.post(['/chat', '/api/chat'], async (req: any, res: any) => {
     try {
         const { mensagem, sessionId = 'default' } = req.body;
 
@@ -199,7 +199,7 @@ app.post('/chat', async (req: any, res: any) => {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
-if (process.env.NODE_ENV !== 'production') {
+if (!process.env.VERCEL) {
     app.listen(PORT, () => {
         console.log(`EsteticaIA rodando em http://localhost:${PORT}`);
     });
