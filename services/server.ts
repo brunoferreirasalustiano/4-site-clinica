@@ -148,31 +148,43 @@ function atualizarCadastro(contexto: LunaContexto, mensagem: string) {
 }
 
 function salvarAgendamentoReal(contexto: LunaContexto) {
-    const agendamentosPath = join(process.cwd(), 'agendamentos.json');
-    let lista: any[] = [];
-
-    if (existsSync(agendamentosPath)) {
-        try {
-            lista = JSON.parse(readFileSync(agendamentosPath, 'utf8'));
-        } catch (e) {
-            lista = [];
-        }
+    let agendamentosPath = join(process.cwd(), 'agendamentos.json');
+    
+    // Na Vercel, o diretório da função (/var/task) é somente-leitura.
+    // Usamos a pasta temporária (/tmp) que é o único local gravável no ambiente Serverless da Vercel.
+    if (process.env.VERCEL) {
+        agendamentosPath = '/tmp/agendamentos.json';
     }
 
-    const novo = {
-        id: 'agend_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-        sessionId: contexto.sessionId,
-        clienteNome: contexto.clienteNome || 'Desconhecido',
-        clienteTelefone: contexto.clienteTelefone || 'Não informado',
-        servico: contexto.servicoAtual || 'Procedimentos Escolhidos',
-        dataHora: contexto.respostasAnamnese['periodo'] || 'A combinar',
-        respostasAnamnese: contexto.respostasAnamnese,
-        criadoEm: new Date().toISOString()
-    };
+    try {
+        let lista: any[] = [];
 
-    lista.push(novo);
-    writeFileSync(agendamentosPath, JSON.stringify(lista, null, 2), 'utf8');
-    console.log(`✅ Agendamento REAL salvo com sucesso em agendamentos.json:`, novo);
+        if (existsSync(agendamentosPath)) {
+            try {
+                lista = JSON.parse(readFileSync(agendamentosPath, 'utf8'));
+            } catch (e) {
+                lista = [];
+            }
+        }
+
+        const novo = {
+            id: 'agend_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            sessionId: contexto.sessionId,
+            clienteNome: contexto.clienteNome || 'Desconhecido',
+            clienteTelefone: contexto.clienteTelefone || 'Não informado',
+            servico: contexto.servicoAtual || 'Procedimentos Escolhidos',
+            dataHora: contexto.respostasAnamnese['periodo'] || 'A combinar',
+            respostasAnamnese: contexto.respostasAnamnese,
+            criadoEm: new Date().toISOString()
+        };
+
+        lista.push(novo);
+        writeFileSync(agendamentosPath, JSON.stringify(lista, null, 2), 'utf8');
+        console.log(`✅ Agendamento REAL salvo com sucesso em ${agendamentosPath}:`, novo);
+    } catch (error: any) {
+        console.error(`⚠️ Não foi possível gravar o agendamento no disco físico (${agendamentosPath}):`, error.message);
+        // Capturamos e tratamos o erro silenciosamente para que o agendamento da cliente nunca quebre ou gere um erro 500 no chat.
+    }
 }
 
 function pareceRespostaDeAnamnese(contexto: LunaContexto, mensagem: string): boolean {
