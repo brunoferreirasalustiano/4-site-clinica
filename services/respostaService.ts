@@ -106,7 +106,7 @@ export function gerarResposta(
         if (pendencias.length === 1 && proxima.includes('telefone')) {
             return `Perfeito, recebi seu nome! Agora só falta mais uma informação para concluirmos:\n\n👉 **${proxima}**`;
         }
-        return `Ótimo! Sua triagem clínica foi concluída com sucesso e você está apta(o) para o procedimento de ${alvo}.\n\nPara fazer o seu **agendamento real** e registrar sua ficha na clínica, preciso de duas informações rápidas:\n\n👉 **${proxima}**`;
+        return `Ótimo! Sua triagem clínica foi concluída com sucesso e você está apta(o) para o procedimento de ${alvo}.\n\nPara fazer o seu **agendamento real**, preciso registrar sua ficha. *Fique tranquila, seus dados estão totalmente seguros e protegidos em conformidade com a LGPD (Lei Geral de Proteção de Dados).* 🔒\n\n👉 **${proxima}**`;
     }
 
     if (contexto?.etapa === 'agendamento') {
