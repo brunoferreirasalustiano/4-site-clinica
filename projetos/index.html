@@ -176,7 +176,7 @@
                         <span>Online agora</span>
                     </div>
                     <div id="messages">
-                        <div class="message bot">Olá! Como posso ajudar você hoje?</div>
+                        <div class="message bot" id="msg-boas-vindas">Olá! Como posso ajudar você hoje?</div>
                     </div>
                     <div class="input-area">
                         <input type="text" id="user-input" placeholder="Digite sua dúvida..." autocomplete="off">
@@ -229,12 +229,19 @@
             }
         }
 
+        function formatarMarkdown(texto) {
+            if (!texto) return '';
+            // Converte **texto** para <strong>texto</strong> e *texto* para <em>texto</em>
+            return texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+        }
+
         function adicionarMensagem(texto, tipo) {
             const mensagem = document.createElement('div');
             mensagem.className = `message ${tipo}`;
-            mensagem.textContent = texto;
+            mensagem.innerHTML = formatarMarkdown(texto);
             box.appendChild(mensagem);
             box.scrollTop = box.scrollHeight;
+            return mensagem; // Retornamos para uso no Indicador de Digitação
         }
 
         function adicionarBotaoWhatsApp(detalhes, contexto) {
@@ -314,6 +321,12 @@
                 if (contexto.etapa === 'agendamento' || contexto.etapa === 'encaminhar_humano' || contexto.etapa === 'bloqueado_risco') {
                     adicionarBotaoWhatsApp(null, contexto);
                 }
+            } else if (contexto && contexto.clienteNome) {
+                // RECONHECIMENTO DE CLIENTE: Se tem nome mas não tem histórico, cumprimenta
+                const msgInicial = document.getElementById('msg-boas-vindas');
+                if (msgInicial) {
+                    msgInicial.innerHTML = `Oi de novo, <strong>${contexto.clienteNome}</strong>! Como posso te ajudar hoje? Quer continuar de onde paramos ou tem alguma nova dúvida?`;
+                }
             }
         }
 
@@ -325,6 +338,10 @@
             input.value = '';
             input.focus();
             sendButton.disabled = true;
+
+            // Adiciona o indicador de digitação da Luna
+            const typingIndicator = adicionarMensagem('<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>', 'bot');
+            typingIndicator.classList.add('typing-indicator');
 
             const contextoLocal = obterContextoLocal();
             const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname
@@ -339,6 +356,12 @@
                 });
 
                 const data = await response.json();
+                
+                // Remove o indicador de digitação
+                if (typingIndicator.parentNode) {
+                    typingIndicator.parentNode.removeChild(typingIndicator);
+                }
+
                 adicionarMensagem(data.resposta, 'bot');
                 
                 // Salva o novo contexto retornado pelo servidor no LocalStorage
