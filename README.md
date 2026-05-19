@@ -15,8 +15,8 @@ O grande diferencial deste projeto não é apenas integrar um LLM genérico, mas
 
 ## 💻 Stack de Tecnologias
 
-- **Frontend:** Vanilla HTML5, CSS3, JavaScript (arquitetura SPA simulada sem frameworks pesados para carregamento instantâneo).
-- **Backend:** Node.js com TypeScript.
+- **Frontend:** Vanilla HTML5, CSS3 e JavaScript puro (extremamente leve para carregamento instantâneo no celular).
+- **API Serverless:** Código estruturado em Node.js com TypeScript, rodando diretamente nas Edge Functions da Vercel (sem necessidade de um servidor backend tradicional rodando 24h).
 - **Integração IA:** Groq API (LLaMA-3 70B Versatile) para classificação de intenções e respostas dinâmicas em milissegundos.
 - **Deploy/Infraestrutura:** Vercel (Serverless Functions via `/api`), projetado para tolerância a falhas e arquitetura 100% *stateless*.
 
