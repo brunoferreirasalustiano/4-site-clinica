@@ -103,7 +103,10 @@ export function gerarResposta(
     if (contexto?.etapa === 'cadastro') {
         const pendencias = contexto.pendenciasCadastro || [];
         const proxima = pendencias[0] || 'Por favor, informe seu nome completo.';
-        return `Ótimo! Sua triagem clínica foi concluída com sucesso e você está apta(o) para o procedimento de ${alvo}.\n\nPara fazer o seu **agendamento real** e registrar sua ficha na clínica, preciso de duas informações rápidas:\n👉 **${proxima}**`;
+        if (pendencias.length === 1 && proxima.includes('telefone')) {
+            return `Perfeito, recebi seu nome! Agora só falta mais uma informação para concluirmos:\n\n👉 **${proxima}**`;
+        }
+        return `Ótimo! Sua triagem clínica foi concluída com sucesso e você está apta(o) para o procedimento de ${alvo}.\n\nPara fazer o seu **agendamento real** e registrar sua ficha na clínica, preciso de duas informações rápidas:\n\n👉 **${proxima}**`;
     }
 
     if (contexto?.etapa === 'agendamento') {

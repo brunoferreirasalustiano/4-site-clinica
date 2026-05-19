@@ -14,5 +14,37 @@
       "pele_sensivel": "Negado: Nao, sem sensibilidade ou acne"
     },
     "criadoEm": "2026-05-18T22:34:54.724Z"
+  },
+  {
+    "id": "agend_1779145146665_nmod",
+    "sessionId": "971cd7a0-0d8f-4aaa-b037-6fdd90e01582",
+    "clienteNome": "Prefiro apenas o preenchimento labial mesmo",
+    "clienteTelefone": "Sim, concordo. Prefiro PIX.",
+    "servico": "Peeling Quimico",
+    "dataHora": "Negado: Nao estou gravida, sem alergias, sem Roacutan, pele excelente, prefiro de tarde",
+    "respostasAnamnese": {
+      "gestacao_amamentacao": "Negado: 1. nao estou gravida, 2. sem alergias ou infeccoes e 3. nunca tomei roacutan ou usei acidos fortes.",
+      "alergias_infeccoes": "Negado: 1. nao estou gravida, 2. sem alergias ou infeccoes e 3. nunca tomei roacutan ou usei acidos fortes.",
+      "medicamentos_procedimentos": "Negado: 1. nao estou gravida, 2. sem alergias ou infeccoes e 3. nunca tomei roacutan ou usei acidos fortes.",
+      "periodo": "Negado: Nao estou gravida, sem alergias, sem Roacutan, pele excelente, prefiro de tarde",
+      "pele_sensivel": "Negado: Nao, sem sensibilidade ou acne"
+    },
+    "criadoEm": "2026-05-18T22:59:06.666Z"
+  },
+  {
+    "id": "agend_1779145283822_ldit",
+    "sessionId": "971cd7a0-0d8f-4aaa-b037-6fdd90e01582",
+    "clienteNome": "Prefiro apenas o preenchimento labial mesmo",
+    "clienteTelefone": "Sim, concordo. Prefiro PIX.",
+    "servico": "Peeling Quimico",
+    "dataHora": "Negado: Nao estou gravida, sem alergias, sem Roacutan, pele excelente, prefiro de tarde",
+    "respostasAnamnese": {
+      "gestacao_amamentacao": "Negado: 1. nao estou gravida, 2. sem alergias ou infeccoes e 3. nunca tomei roacutan ou usei acidos fortes.",
+      "alergias_infeccoes": "Negado: 1. nao estou gravida, 2. sem alergias ou infeccoes e 3. nunca tomei roacutan ou usei acidos fortes.",
+      "medicamentos_procedimentos": "Negado: 1. nao estou gravida, 2. sem alergias ou infeccoes e 3. nunca tomei roacutan ou usei acidos fortes.",
+      "periodo": "Negado: Nao estou gravida, sem alergias, sem Roacutan, pele excelente, prefiro de tarde",
+      "pele_sensivel": "Negado: Nao, sem sensibilidade ou acne"
+    },
+    "criadoEm": "2026-05-18T23:01:23.822Z"
   }
 ]

@@ -254,14 +254,25 @@
                 if (resp.alergias_infeccoes) textoFicha += `🦠 *Alergias/Infecções:* ${resp.alergias_infeccoes}\n`;
                 if (resp.medicamentos_procedimentos) textoFicha += `💊 *Medicamentos/Roacutan:* ${resp.medicamentos_procedimentos}\n`;
                 if (resp.pele_sensivel) textoFicha += `🔴 *Sensibilidade/Acne:* ${resp.pele_sensivel}\n`;
-                if (resp.periodo) textoFicha += `🕒 *Período preferido:* ${resp.periodo}\n`;
+                if (resp.periodo) textoFicha += `🕒 *Período preferido:* ${resp.periodo}\n\n`;
             } else {
                 const resumo = [
                     `Serviço: ${contexto?.servicoAtual || detalhes?.servico || 'Procedimentos'}`,
                     `Período: ${detalhes?.data || 'A combinar'}`,
                     `Risco: ${contexto?.risco || 'não informado'}`
                 ].join(' | ');
-                textoFicha += resumo;
+                textoFicha += resumo + `\n\n`;
+            }
+
+            if (contexto?.mensagens && Array.isArray(contexto.mensagens) && contexto.mensagens.length > 0) {
+                textoFicha += `💬 *HISTÓRICO DA CONVERSA (LUNA IA)*\n`;
+                contexto.mensagens.forEach((msg) => {
+                    const remetente = msg.origem === 'cliente' ? 'Cliente' : 'Luna IA';
+                    // Simplifica quebras de linha para manter a mensagem do WhatsApp legível
+                    const textoLimpo = msg.texto.replace(/\n+/g, ' ').substring(0, 120);
+                    textoFicha += `*${remetente}:* ${textoLimpo}\n`;
+                });
+                textoFicha += `\n`;
             }
 
             const mensagemZap = encodeURIComponent(textoFicha);
