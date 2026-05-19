@@ -46,5 +46,21 @@
       "pele_sensivel": "Negado: Nao, sem sensibilidade ou acne"
     },
     "criadoEm": "2026-05-18T23:01:23.822Z"
+  },
+  {
+    "id": "agend_1779150028120_4l5g",
+    "sessionId": "14d76838-9225-4a66-a173-b56c8aa15e03",
+    "clienteNome": "pix",
+    "clienteTelefone": "19999999999",
+    "servico": "Preenchimento Labial",
+    "dataHora": "tarde",
+    "respostasAnamnese": {
+      "gestacao_amamentacao": "Negado: 1 não 2 não 3 não",
+      "alergias_infeccoes": "Negado: não para as 3",
+      "medicamentos_procedimentos": "Negado: 1 não 2 não 3 não",
+      "pele_sensivel": "Negado: 1 não 2 não",
+      "periodo": "tarde"
+    },
+    "criadoEm": "2026-05-19T00:20:28.120Z"
   }
 ]
