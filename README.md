@@ -1,5 +1,7 @@
 # EstéticaIA - Clínica de Estética com Assistente Virtual Híbrida 🌟
 
+🌐 **Acesse o projeto rodando ao vivo:** [https://4-site-clinica.vercel.app/](https://4-site-clinica.vercel.app/)
+
 Este projeto é uma plataforma *premium* para clínicas de estética, combinando um design altamente polido e responsivo com a **Luna**, uma assistente virtual de Inteligência Artificial desenhada sob uma arquitetura de máquina de estados estrita. O objetivo é converter leads com empatia, enquanto blinda a clínica contra alucinações de IA durante a triagem médica e o agendamento.
 
 ## 🚀 Arquitetura "Jaula Híbrida" (Hybrid State Machine)
