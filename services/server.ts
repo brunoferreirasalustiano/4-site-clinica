@@ -308,11 +308,12 @@ app.post(['/chat', '/api/chat'], async (req: any, res: any) => {
 
         let textoResposta = '';
         
-        // Se for sinal de alerta, anamnese, finalização ou risco, usamos as respostas estáticas controladas para 100% de precisão, segurança e conformidade clínica.
+        // Se for sinal de alerta, anamnese, cadastro, finalização ou risco, usamos as respostas estáticas controladas para 100% de precisão, segurança e conformidade clínica.
         const usarRespostaControlada = 
             analiseIA.intent === 'sinal_alerta' || 
             contexto.risco === 'alto' || 
             contexto.etapa === 'anamnese' || 
+            contexto.etapa === 'cadastro' || 
             contexto.etapa === 'agendamento' || 
             contexto.etapa === 'bloqueado_risco' || 
             contexto.etapa === 'encaminhar_humano';
